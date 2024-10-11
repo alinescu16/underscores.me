@@ -153,3 +153,43 @@ function underscoresme_get_contributors() {
 
 	return (array) $contributors;
 }
+
+
+
+add_action( 'wp_enqueue_scripts', function (): void {
+	// Enqueue the CSS file
+	$css_files = glob( get_template_directory() . '/dist/css/styles.*.css' );
+	if ( ! empty( $css_files ) ) {
+		wp_enqueue_style( 'your-theme-name-style', get_template_directory_uri() . '/dist/css/' . basename( $css_files[0] ), array(), '1.0.0' );
+	}
+
+	// Enqueue the main JavaScript file
+	$main_js_files = glob( get_template_directory() . '/dist/js/main.*.js' );
+	if ( ! empty( $main_js_files ) ) {
+		wp_enqueue_script( 'your-theme-name-main-script', get_template_directory_uri() . '/dist/js/' . basename( $main_js_files[0] ), array( 'jquery' ), '1.0.0', true ); 
+		wp_localize_script( 'your-theme-name-main-script', 'myAjax', array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ) 
+		)); 
+	}
+
+	// Enqueue the styles JavaScript file (if needed)
+	$styles_js_files = glob( get_template_directory() . '/dist/js/styles.*.js' );
+	if ( ! empty( $styles_js_files ) ) {
+		wp_enqueue_script( 'your-theme-name-styles-script', get_template_directory_uri() . '/dist/js/' . basename( $styles_js_files[0] ), array( 'jquery' ), '1.0.0', true ); 
+	}
+	// Localize your script 
+	wp_localize_script( 'your-theme-name-main-script', 'myAjax', array(
+	  'ajaxurl' => admin_url( 'admin-ajax.php' ) 
+	));
+} );
+
+add_action( 'wp_ajax_my_ajax_action', 'my_ajax_action_callback' );
+add_action( 'wp_ajax_nopriv_my_ajax_action', 'my_ajax_action_callback' ); 
+
+function my_ajax_action_callback(): void {
+  $data = $_POST['data']; // Get data from the request
+
+  // Send the JSON response
+  wp_send_json_success( array( 'message' => 'Success!' ) ); 
+  wp_die(); // Always end AJAX with wp_die()
+}
